@@ -13,6 +13,7 @@ csrf = CSRFProtect(app)
 
 app.config['SECRET_KEY'] = 'mysecretkey'
 app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024 # 16GB
 
 
 @app.route('/')
