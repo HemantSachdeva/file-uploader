@@ -6,6 +6,8 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.utils import secure_filename
 from wtforms import FileField, StringField, SubmitField, validators
 
+from database.enter_record import enter_record
+
 app = Flask(__name__)
 csrf = CSRFProtect(app)
 
@@ -28,6 +30,7 @@ def upload():
             filename = secure_filename(file.filename)
             path_to_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(path_to_file)
+            enter_record(path_to_file)
             return render_template('upload.html', filename=filename)
     return render_template('upload.html')
 
