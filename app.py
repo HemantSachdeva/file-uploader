@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, send_from_directory
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.utils import secure_filename
-from wtforms import FileField, StringField, SubmitField
+from wtforms import FileField, StringField, SubmitField, validators
 
 app = Flask(__name__)
 csrf = CSRFProtect(app)
@@ -43,12 +43,13 @@ def download():
 
 
 class UploadForm(FlaskForm):
-    file = FileField('File')
+    file = FileField('File', validators=[validators.InputRequired()])
     submit = SubmitField('Upload')
 
 
 class DownloadForm(FlaskForm):
-    text = StringField('Text')
+    text = StringField('Text', [validators.InputRequired()], render_kw={
+                       "placeholder": "Enter file name"})
     submit = SubmitField('Download')
 
 
