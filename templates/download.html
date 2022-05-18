@@ -1,0 +1,5 @@
+<form action="/download" , method="post" , enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {{ form.text }}
+    {{ form.submit }}
+</form>
