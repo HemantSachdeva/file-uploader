@@ -45,6 +45,14 @@ def download():
     return render_template('download.html', form=form)
 
 
+@app.route('/download/<filename>')
+def download_file(filename):
+    if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+    else:
+        return 'File does not exist'
+
+
 class UploadForm(FlaskForm):
     file = FileField('File', validators=[validators.InputRequired()])
     submit = SubmitField('Upload')
