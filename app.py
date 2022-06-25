@@ -4,8 +4,9 @@ from flask import Flask, render_template, request, send_from_directory
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.utils import secure_filename
-from wtforms import FileField, StringField, SubmitField, validators
+from wtforms import StringField, SubmitField, validators
 
+from database.client import UploaderClient
 from database.enter_record import enter_record
 
 app = Flask(__name__)
@@ -13,26 +14,26 @@ csrf = CSRFProtect(app)
 
 app.config['SECRET_KEY'] = 'mysecretkey'
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024 # 16GB
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024  # 16GB
 
 
 @app.route('/')
 def index():
-    form = UploadForm()
-    return render_template('index.html', form=form)
+    return render_template('index.html')
 
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-    form = UploadForm()
     if request.method == 'POST':
-        if form.validate_on_submit():
-            file = request.files['file']
-            filename = secure_filename(file.filename)
-            path_to_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(path_to_file)
-            enter_record(path_to_file)
-            return render_template('upload.html', filename=filename)
+        file = request.files['file']
+        file_name = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
+        file.save(file_path)
+        metadata = UploaderClient(
+            'http://localhost:1080/files/', file_path).upload_to_s3()
+        enter_record(metadata)
+        print(metadata)
+        return render_template('upload.html')
     return render_template('upload.html')
 
 
@@ -52,11 +53,6 @@ def download_file(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
     else:
         return 'File does not exist'
-
-
-class UploadForm(FlaskForm):
-    file = FileField('File', validators=[validators.InputRequired()])
-    submit = SubmitField('Upload')
 
 
 class DownloadForm(FlaskForm):
