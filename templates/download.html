@@ -1,9 +1,0 @@
-{% extends 'base.html' %}
-{% block title %} Download File {% endblock %}
-{% block content %}
-<form action="/download" , method="post" , enctype="multipart/form-data">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    {{ form.text }}
-    {{ form.submit(class="btn btn-primary") }}
-</form>
-{% endblock %}
