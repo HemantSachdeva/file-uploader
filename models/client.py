@@ -93,7 +93,8 @@ class UploaderClient:
         my_client = client.TusClient(self.url)
 
         upload_url = filestorage.FileStorage('url.json')
-        uploader = Uploader(client=my_client, store_url=True, url_storage=upload_url, file_stream=open(file=self.file_path, mode='rb'))
+        uploader = Uploader(client=my_client, store_url=True,
+                            url_storage=upload_url, file_stream=self.file_path)
         uploader.upload()
 
         data = loads(open('url.json').read())
