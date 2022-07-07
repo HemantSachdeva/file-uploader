@@ -11,7 +11,7 @@ class Upload(Resource):
         if data['status'] == 'success':
             return jsonify({
                 'status': 'success',
-                'metadata': data['upload_url']
+                'metadata': data['metadata']
             })
         else:
             return jsonify({

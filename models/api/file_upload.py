@@ -3,8 +3,10 @@ from os import getenv
 from dotenv import load_dotenv
 from flask import jsonify, request
 from models.client import UploaderClient
+from models.enter_record import enter_record
 
 load_dotenv()
+
 
 class UploadFileToS3:
     @classmethod
@@ -12,11 +14,13 @@ class UploadFileToS3:
         try:
             file = request.files['file']
             cl = UploaderClient(getenv('BUCKET_URL'), file)
-            upload_url = cl.upload_to_s3()
+            metadata = cl.upload_to_s3()
+
+            enter_record(metadata)
 
             return jsonify({
                 'status': 'success',
-                'upload_url': upload_url
+                'metadata': metadata
             })
 
         except Exception as e:
