@@ -16,7 +16,7 @@
  """
 
 from json import loads
-from os import path
+import os
 
 import magic
 from tusclient import client
@@ -32,43 +32,43 @@ class UploaderClient:
         - url (str):
             represents the S3 bucket's create extension url. On instantiation this argument
             must be passed to the constructor.
-        - file_path (str):
-            path of the file to upload.
+        - file (FileStorage):
+            Object of the file received in the request.
 
     :Constructor Args:
         - url (str)
     """
 
-    def __init__(self, url, file_path):
+    def __init__(self, url, file):
         self.url = url
-        self.file_path = file_path
+        self.file = file
 
-    def get_metadata(self, file_path):
+    def get_metadata(self, file):
         """
         Get metadata of the file.
 
         :Attributes:
-            - file_path (str):
-                path of the file to get metadata.
+            - file (FileStorage):
+                Object of the file received in the request.
 
         :Returns:
             - metadata (dict):
                 metadata of the file.
         """
 
-        file_name = path.basename(file_path)
+        file_name = file.filename
         extension = file_name.split('.')[-1]
-        content_type = magic.from_file(file_path, mime=True)
-        file_size = path.getsize(file_path)
+        content_type = magic.from_buffer(file.read(), mime=True)
+        file_size = file.seek(0, 2)
 
         if file_size < 1024:
-            file_size = str(file_size) + 'B'
+            file_size = str(file_size) + ' B'
         elif file_size < 1048576:
-            file_size = str(round(file_size / 1024, 2)) + 'KB'
+            file_size = str(round(file_size / 1024, 2)) + ' KB'
         elif file_size < 1073741824:
-            file_size = str(round(file_size / 1048576, 2)) + 'MB'
+            file_size = str(round(file_size / 1048576, 2)) + ' MB'
         else:
-            file_size = str(round(file_size / 1073741824, 2)) + 'GB'
+            file_size = str(round(file_size / 1073741824, 2)) + ' GB'
 
         metadata = {
             'filename': file_name,
@@ -88,17 +88,20 @@ class UploaderClient:
                 download url of the uploaded file.
         """
 
-        metadata = self.get_metadata(self.file_path)
+        metadata = self.get_metadata(self.file)
 
         my_client = client.TusClient(self.url)
 
         upload_url = filestorage.FileStorage('url.json')
         uploader = Uploader(client=my_client, store_url=True,
-                            url_storage=upload_url, file_stream=self.file_path)
+                            url_storage=upload_url, file_stream=self.file)
         uploader.upload()
 
         data = loads(open('url.json').read())
-        l = len(data['_default'])
 
-        metadata['url'] = data['_default'][f'{l}']['url']
+        metadata['url'] = data['_default']['1']['url']
+
+        if os.path.exists('url.json'):
+            os.remove('url.json')
+
         return metadata
