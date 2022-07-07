@@ -1,14 +1,17 @@
+from os import getenv
+
+from dotenv import load_dotenv
 from flask import jsonify, request
 from models.client import UploaderClient
 
+load_dotenv()
 
 class UploadFileToS3:
     @classmethod
     def upload_file(cls):
         try:
             file = request.files['file']
-            cl = UploaderClient('http://0.0.0.0:1080/files/',
-                                file)
+            cl = UploaderClient(getenv('BUCKET_URL'), file)
             upload_url = cl.upload_to_s3()
 
             return jsonify({
